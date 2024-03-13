@@ -3,13 +3,13 @@ import numpy as np
 import sys
 from math import sqrt, cos, sin
 
-#Enermy square
-min_time_between_enermy_spawn = 300
-max_enermies = 20
-enermy_speed = 0.3
-enermy_size = 50
-enermy_hp_scale = 10
-enermy_spawn_scale = 10
+#Enemy square
+min_time_between_Enemy_spawn = 300
+max_enemies = 20
+Enemy_speed = 0.3
+Enemy_size = 50
+Enemy_hp_scale = 10
+Enemy_spawn_scale = 10
 
 #Player square
 player_speed = 1.0
@@ -27,30 +27,30 @@ speed_increase = 0.2
 
 weapon_upgrade_cost = 1500
 
-#Enermy that bounces around window
-class Enermy():
+#Enemy that bounces around window
+class Enemy():
     
     def __init__(self, col, size_x, size_y, from_x, from_y, to_x, to_y, speed, health):
         
-        #Enermy Colour
+        #Enemy Colour
         self.colour = col
         
-        #Enermy size
+        #Enemy size
         self.size_x = size_x
         self.size_y = size_y
         
-        #Enermy Initial Position
+        #Enemy Initial Position
         self.position_x = from_x
         self.position_y = from_y
         
-        #Enermy Speed
+        #Enemy Speed
         vector_x = to_x - from_x
         vector_y = to_y - from_y
         mag = sqrt(vector_x**2 + vector_y**2)
         self.speed_x = (vector_x / mag) * speed
         self.speed_y = (vector_y / mag) * speed
         
-        #Enermy health
+        #Enemy health
         self.current_hp = health
         self.max_hp = health
         
@@ -59,7 +59,7 @@ class Enermy():
         
     def update(self, win, win_size_x, win_size_y, dt):
         
-        #Return True if enermy is defeated
+        #Return True if Enemy is defeated
         if self.current_hp <= 0:
             return True
         
@@ -90,7 +90,7 @@ class Enermy():
     
     def projectile_hit(self, projectile_x, projectile_y, damage):
         
-        #Check if projectile is inside enermy rect
+        #Check if projectile is inside Enemy rect
         if (projectile_x > self.position_x and projectile_x < self.position_x + self.size_x and 
             projectile_y > self.position_y and projectile_y < self.position_y + self.size_y):
             
@@ -131,10 +131,10 @@ class player_projectile():
         #Update position of Projectile
         pygame.draw.circle(win, self.colour, (self.position_x, self.position_y), self.size)
         
-    def collision(self, win_size_x, win_size_y, enermies):
+    def collision(self, win_size_x, win_size_y, enemies):
         
-        #Check if collision with enermy occurs
-        for i in enermies:
+        #Check if collision with Enemy occurs
+        for i in enemies:
             if i.projectile_hit(self.position_x, self.position_y, self.damage):
                 return True
             
@@ -167,7 +167,7 @@ class Weapon():
         self.fire_delay = projectile_fire_delay
         self.speed_count = 1
         
-        #Damage to enermy
+        #Damage to Enemy
         self.damage = projectile_damage
         self.damage_updgrade_count = 1
         
@@ -205,12 +205,12 @@ class Weapon():
                 self.projectiles.append(player_projectile(self.colour, self.size, from_x, from_y, speed_x * cos(0.3927) - speed_y * sin(0.3927), speed_x * sin(0.3927) + speed_y * cos(0.3927), self.damage))
                 self.projectiles.append(player_projectile(self.colour, self.size, from_x, from_y, speed_x * cos(0.7854) - speed_y * sin(0.7854), speed_x * sin(0.7854) + speed_y * cos(0.7854), self.damage))
                 
-    def update_and_collision(self, window, window_size_x, window_size_y, enermies, dt):
+    def update_and_collision(self, window, window_size_x, window_size_y, enemies, dt):
         
         i = 0
         while i < len(self.projectiles):
             self.projectiles[i].update(window, dt)
-            if self.projectiles[i].collision(window_size_x, window_size_y, enermies):
+            if self.projectiles[i].collision(window_size_x, window_size_y, enemies):
                 self.projectiles.pop(i)
             else:
                 i += 1
@@ -282,14 +282,14 @@ class Player():
         self.square = pygame.Rect(self.position_x, self.position_y, self.size_x, self.size_y)
         pygame.draw.rect(win, self.colour, self.square)
         
-    #Check if player is inside an enermy block
-    def collision(self, enermy):
-        for i_enermy in enermy:
+    #Check if player is inside an Enemy block
+    def collision(self, Enemy):
+        for i_Enemy in Enemy:
             
-            if (self.position_x < i_enermy.position_x + i_enermy.size_x and
-                self.position_x + self.size_x > i_enermy.position_x and
-                self.position_y < i_enermy.position_y + i_enermy.size_y and
-                self.position_y + self.size_y > i_enermy.position_y):
+            if (self.position_x < i_Enemy.position_x + i_Enemy.size_x and
+                self.position_x + self.size_x > i_Enemy.position_x and
+                self.position_y < i_Enemy.position_y + i_Enemy.size_y and
+                self.position_y + self.size_y > i_Enemy.position_y):
                 
                 return True
             
@@ -316,8 +316,8 @@ class Game():
         #Player
         self.player = Player(p_col, win_x, win_y)
         
-        #Enermies
-        self.enermies = []
+        #enemies
+        self.enemies = []
         self.time_since_last_spawn = 0
         
         #Background colour
@@ -418,14 +418,14 @@ class Game():
             #Shoot weapon at mouse location
             self.player.weapon.shoot(self.player.position_x, self.player.position_y, mouse_x, mouse_y, dt)
             
-            #Add 1 enermy after set period * len(self.enermies), up to a max of max_enermies or enermy_spawn_scale * current_score whichever is less. HP set to 1 + score/enermy_hp_scale
-            if self.time_since_last_spawn > len(self.enermies) * min_time_between_enermy_spawn and len(self.enermies) < max_enermies and self.player.score >= enermy_spawn_scale * len(self.enermies):
+            #Add 1 Enemy after set period * len(self.enemies), up to a max of max_enemies or Enemy_spawn_scale * current_score whichever is less. HP set to 1 + score/Enemy_hp_scale
+            if self.time_since_last_spawn > len(self.enemies) * min_time_between_Enemy_spawn and len(self.enemies) < max_enemies and self.player.score >= Enemy_spawn_scale * len(self.enemies):
                 
                 #Make spawn at a random corner of window
                 spawn_x = self.window_size_x * np.random.randint(0, 2)
                 spawn_y = self.window_size_y * np.random.randint(0, 2)
                 
-                self.enermies.append(Enermy((np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)), enermy_size, enermy_size, spawn_x, spawn_y, self.player.position_x, self.player.position_y, enermy_speed, 1 + self.player.score/enermy_hp_scale))
+                self.enemies.append(Enemy((np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)), Enemy_size, Enemy_size, spawn_x, spawn_y, self.player.position_x, self.player.position_y, Enemy_speed, 1 + self.player.score/Enemy_hp_scale))
                 
                 self.time_since_last_spawn = 0
                 
@@ -434,27 +434,27 @@ class Game():
             self.player.update(self.window) 
             
             #Update player weapon projectiles and collisions
-            self.player.weapon.update_and_collision(self.window, self.window_size_x, self.window_size_y, self.enermies, dt)
+            self.player.weapon.update_and_collision(self.window, self.window_size_x, self.window_size_y, self.enemies, dt)
                     
-            #Update enermies and score
+            #Update enemies and score
             i = 0
-            while i < len(self.enermies):
-                if self.enermies[i].update(self.window, self.window_size_x, self.window_size_y, dt) == True:
-                    self.player.score += int(self.enermies[i].max_hp)
+            while i < len(self.enemies):
+                if self.enemies[i].update(self.window, self.window_size_x, self.window_size_y, dt) == True:
+                    self.player.score += int(self.enemies[i].max_hp)
                     self.player.money += 100
-                    self.enermies.pop(i)
+                    self.enemies.pop(i)
                     
                     #Play sound
-                    pygame.mixer.Sound("Enermy_Defeated.wav").play()
+                    pygame.mixer.Sound("Enemy_Defeated.wav").play()
                     
                 else:
                     i += 1
             
-            #Check player is not inside an enermy
-            if self.player.collision(self.enermies):
+            #Check player is not inside an Enemy
+            if self.player.collision(self.enemies):
                 pygame.mixer.Sound("Game_Over.wav").play()
                 print(f"You scored: {self.player.score}")
-                self.enermies.clear()
+                self.enemies.clear()
                 self.player.reset(self.window_size_x, self.window_size_y)
                 
             #Display current score
@@ -463,6 +463,7 @@ class Game():
             
             #Update display   
             pygame.display.flip()
-    
-game = Game(w_col = (255, 255, 255), win_x = 1500, win_y = 750, p_col = (0, 255, 0))
-game.run()
+            
+if __name__ == "__main__":    
+    game = Game(w_col = (255, 255, 255), win_x = 1500, win_y = 750, p_col = (0, 255, 0))
+    game.run()
