@@ -188,8 +188,8 @@ class shooter_1(unit):
         
     def act(self, enermies, projectiles, money, dt):
         
-        #Append new projectile after each attack_delay is reached and there is at least one enermy in the same row
-        if any(enermy.position_y == self.position_y and enermy.position_x < win_x for enermy in enermies) and self.time_since_last_attack >= self.attack_delay:
+        #Append new projectile after each attack_delay is reached and there is at least one enemy in the same row
+        if any(enemy.position_y == self.position_y and enemy.position_x < win_x for enemy in enermies) and self.time_since_last_attack >= self.attack_delay:
             
            projectiles.append(projectile(col = (255, 255, 255), initial_pos_x = self.position_x, initial_pos_y = self.position_y, radius = 10, vel = (1, 0), damage = self.damage))
            self.time_since_last_attack = 0
@@ -231,8 +231,8 @@ class shooter_2(unit):
         
     def act(self, enermies, projectiles, money, dt):
         
-        #Append new projectile after each attack_delay is reached and there is at least one enermy in the same row
-        if self.current_shot == 0 and (any(enermy.position_y == self.position_y and enermy.position_x < win_x for enermy in enermies) and self.time_since_last_attack >= self.attack_delay):
+        #Append new projectile after each attack_delay is reached and there is at least one enemy in the same row
+        if self.current_shot == 0 and (any(enemy.position_y == self.position_y and enemy.position_x < win_x for enemy in enermies) and self.time_since_last_attack >= self.attack_delay):
             
            projectiles.append(projectile(col = (255, 255, 255), initial_pos_x = self.position_x, initial_pos_y = self.position_y, radius = 10, vel = (1, 0), damage = self.damage))
            self.current_shot += 1
@@ -290,8 +290,8 @@ class shooter_3(unit):
         
     def act(self, enermies, projectiles, money, dt):
         
-        #Append new projectile after each attack_delay is reached and there is at least one enermy in the same row
-        if self.current_shot == 0 and (any(enermy.position_y == self.position_y and enermy.position_x < win_x for enermy in enermies) and self.time_since_last_attack >= self.attack_delay):
+        #Append new projectile after each attack_delay is reached and there is at least one enemy in the same row
+        if self.current_shot == 0 and (any(enemy.position_y == self.position_y and enemy.position_x < win_x for enemy in enermies) and self.time_since_last_attack >= self.attack_delay):
             
            projectiles.append(projectile(col = (255, 255, 255), initial_pos_x = self.position_x, initial_pos_y = self.position_y, radius = 10, vel = (1, 0), damage = self.damage))
            self.current_shot += 1
@@ -369,8 +369,8 @@ avaliable_units = ["Generator", "Fast Generator", "Shooter", "Double Shooter", "
 unit_costs = [generator.cost, fast_generator.cost, shooter_1.cost, shooter_2.cost, shooter_3.cost]
 
 
-#Enermies
-class enermy():
+#Enemies
+class enemy():
     def __init__(self, col, initial_pos_x, initial_pos_y, size):
         
         #Graphic
@@ -386,7 +386,7 @@ class enermy():
     
     def draw():
         pass
-class easy_enermy(enermy):
+class easy_enemy(enemy):
     
     def __init__(self, initial_pos_x, initial_pos_y):    
         
@@ -398,7 +398,7 @@ class easy_enermy(enermy):
         
     def act(self, units, dt):
         
-        #Is this enermy attacking a unit?
+        #Is this enemy attacking a unit?
         attacking = False
 
         for key, unit in units.items():
@@ -419,7 +419,7 @@ class easy_enermy(enermy):
                  
     def draw(self, win):
         pygame.draw.circle(win, self.col, (self.position_x, self.position_y), self.size)
-class medium_enermy(enermy):
+class medium_enemy(enemy):
     
     def __init__(self, initial_pos_x, initial_pos_y):    
         
@@ -434,7 +434,7 @@ class medium_enermy(enermy):
         if self.health <= 100:
             self.col = (0, 0, 0)
         
-        #Is this enermy attacking a unit?
+        #Is this enemy attacking a unit?
         attacking = False
         for key, unit in units.items():
             
@@ -454,7 +454,7 @@ class medium_enermy(enermy):
                  
     def draw(self, win):
         pygame.draw.circle(win, self.col, (self.position_x, self.position_y), self.size)
-class hard_enermy(enermy):
+class hard_enemy(enemy):
     
     def __init__(self, initial_pos_x, initial_pos_y):    
         
@@ -469,7 +469,7 @@ class hard_enermy(enermy):
         if self.health <= 100:
             self.col = (0, 0, 0)
         
-        #Is this enermy attacking a unit?
+        #Is this enemy attacking a unit?
         attacking = False
         for key, unit in units.items():
             
@@ -512,11 +512,11 @@ class projectile:
         self.position_x += dt * self.velocity[0]
         self.position_y += dt * self.velocity[1]
         
-        #Has projectile made contact with an enermy?     
+        #Has projectile made contact with an enemy?     
         i = 0
         while i < len(enermies):
                 
-            #Check if projectile has hit enermy and if so delete by returning true
+            #Check if projectile has hit enemy and if so delete by returning true
             if sqrt((enermies[i].position_x - self.position_x)**2 + (enermies[i].position_y - self.position_y)**2) <= (enermies[i].size + self.radius):
                     
                 enermies[i].health -= self.damage
@@ -648,14 +648,14 @@ class Game():
                 x = random.uniform(spawn_area[0], spawn_area[1])
                 y = random.choice(self.mouse_rows_below_index) + ((self.win_y - self.top_space)/self.rows) / 2
                 
-                enermy_type = np.random.choice(len(type_to_spawn), p=type_to_spawn/sum(type_to_spawn))
+                enemy_type = np.random.choice(len(type_to_spawn), p=type_to_spawn/sum(type_to_spawn))
 
-                if enermy_type == 0:
-                    self.enermies.append(easy_enermy(x, y))
-                elif enermy_type == 1:
-                    self.enermies.append(medium_enermy(x, y))
-                elif enermy_type == 2:
-                    self.enermies.append(hard_enermy(x, y))
+                if enemy_type == 0:
+                    self.enermies.append(easy_enemy(x, y))
+                elif enemy_type == 1:
+                    self.enermies.append(medium_enemy(x, y))
+                elif enemy_type == 2:
+                    self.enermies.append(hard_enemy(x, y))
                     
             self.wave += 1
                 
@@ -679,7 +679,7 @@ class Game():
             
             self.projectiles[i].draw(self.window)
             
-            #Delete projectiles if they go off-screen or hit an enermy
+            #Delete projectiles if they go off-screen or hit an enemy
             if self.projectiles[i].act(self.enermies, self.dt) or self.projectiles[i].position_x < 0 or self.projectiles[i].position_x > self.win_x or self.projectiles[i].position_y < 0 or self.projectiles[i].position_y > self.win_y:
                 self.projectiles.pop(i)
             
@@ -748,7 +748,7 @@ class Game():
                                 
                             #Debug
                             #elif avaliable_units[self.unit_select] == "None":
-                            #    self.enermies.append(easy_enermy(self.tiles[self.hover_row][self.hover_column].centre[0], self.tiles[self.hover_row][self.hover_column].centre[1]))
+                            #    self.enermies.append(easy_enemy(self.tiles[self.hover_row][self.hover_column].centre[0], self.tiles[self.hover_row][self.hover_column].centre[1]))
                                     
                     #Right click to remove unit
                     elif event.button == 3 and (self.hover_row, self.hover_column) in self.units :
