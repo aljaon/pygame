@@ -1,1 +1,1 @@
-Games made with pygame for learning purposes.
+Two different games made with pygame for learning purposes.
